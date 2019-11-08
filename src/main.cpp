@@ -59,12 +59,13 @@ double tempoTwoOpt = 0;
 int qtdMelhorasDoubleBridge = 0;
 double tempoTotalDoubleBridge = 0;
 double tempoDoubleBridge = 0;
-//
 
 // Untils
 void printData(); // Mostra matriz de adjacencia
 void printSolucao(vector<int> &solucao, int tamanhoArray); // Mostra a solução inicial gerada pel algorítimo escolhido
 void custoSolucao(int *custoTotal, vector<int> solucao, int tamanhoArray); // Mostra o custo da solução gerada
+void updateSubsequenceMatrix(vector< vector<int> > &subsequenceMatrix, vector<int> &solution);
+void printSubsequenceMatrix(vector< vector<int> > &subsequenceMatrix);
 bool compareByCost(const tInsercao &data1, const tInsercao &data2);
 
 //GILS-RVND
@@ -73,9 +74,9 @@ int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior);
 int gilsRvnd(vector<int> &solucao, int Imax, int Iils);
 
 // Vizinhanças
-int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior);
-int swap(vector<int> &solucao, int custoDaSolucaoAnterior);
-int twoOptN(vector<int> &solucao, int custoDaSolucaoAnterior);
+int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix);
+int swap(vector<int> &solucao, int custoDaSolucaoAnteriorm, vector< vector<int> > &subsequenceMatrix);
+int twoOptN(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix);
 
 //Pertubações
 int doubleBridge(vector<int> &solucao, int custoDaSolucaoAnterior);
@@ -85,7 +86,7 @@ int arnandoBridge(int N, vector<int> &solucaoTop, vector<int> &solucaoILS, int *
 //MAIN
 int main(int argc, char** argv){
   readData(argc, argv, &dimension, &matrizAdj);
-  //printData();
+  printData();
 
   vector<int> solucao;
   vector<int> arnandoSolucao;
@@ -96,54 +97,51 @@ int main(int argc, char** argv){
   int maxIls = (dimension > 150) ? dimension/2 : dimension; 
   double tempoInicial;
 
-  for(size_t i = 0; i < 10; i++){
-    tempoInicial = cpuTime();
+  // for(size_t i = 0; i < 10; i++){
+    // tempoInicial = cpuTime();
 
-    custoSoluca = gilsRvnd(solucao, 50, maxIls);
+    // custoSoluca = gilsRvnd(solucao, 50, maxIls);
 
-    cout << "Custo: " << custoSoluca << endl;
-    cout << "Tempo total: " << cpuTime() - tempoInicial << endl;
-    cout << "Tempo das reinsercoes: " << tempoTotalReinsercao << endl;
-    cout << "Tempo dos swaps: " << tempoTotalSwap << endl;
-    cout << "Tempo dos two opt n: " << tempoTotalTwoOpt<< endl;
-    cout << "Tempo dos double bridges: " << tempoTotalDoubleBridge << endl;
+    // cout << "Custo: " << custoSoluca << endl;
+    // cout << "Tempo total: " << cpuTime() - tempoInicial << endl;
+    // cout << "Tempo das reinsercoes: " << tempoTotalReinsercao << endl;
+    // cout << "Tempo dos swaps: " << tempoTotalSwap << endl;
+    // cout << "Tempo dos two opt n: " << tempoTotalTwoOpt<< endl;
+    // cout << "Tempo dos double bridges: " << tempoTotalDoubleBridge << endl;
 
-    tempoTotalReinsercao = 0;
-    tempoTotalDoubleBridge = 0;
-    tempoTotalSwap = 0;
-    tempoTotalTwoOpt = 0;
+    // tempoTotalReinsercao = 0;
+    // tempoTotalDoubleBridge = 0;
+    // tempoTotalSwap = 0;
+    // tempoTotalTwoOpt = 0;
 
-    tempoInicial = 0;
+    // tempoInicial = 0;
 
-    cout << endl;
+    // cout << endl;
+  // }
 
-    break;
-  }
+    //Declara variáveis do método construtivo
+    random_device rd;
+    mt19937 mt(rd());
+    uniform_real_distribution<float> linear_f1(0.0, 0.5);
+    int coleta = 1;
+    int deposito = 1;
+    float alpha = 0.0;
 
-    // //Declara variáveis do método construtivo
-    // random_device rd;
-    // mt19937 mt(rd());
-    // uniform_real_distribution<float> linear_f1(0.0, 0.5);
-    // int coleta = 1;
-    // int deposito = 1;
-    // float alpha = 0.0;
+    //Gera solução inicial
+    //while(1){
+      vector< vector<int> > subsequenceMatrix; 
+      alpha = linear_f1(mt);
+      custoSoluca = construtivo(solucao, coleta, deposito, alpha);
+      printSolucao(solucao, dimension);
 
-    // //Gera solução inicial
-    // while(1){
-    //   alpha = linear_f1(mt);
-    //   custoSoluca = construtivo(solucao, coleta, deposito, alpha);
-    //   printSolucao(solucao, dimension);
+      updateSubsequenceMatrix(subsequenceMatrix, solucao);
+      printSubsequenceMatrix(subsequenceMatrix);
 
-    //   arnandoSolucao = solucao;
+      custoSolucao(&custo, solucao, solucao.size());
+      cout << "Custo: " << custoSoluca << " - Testado: " << custo << endl;
 
-    //   custoSoluca = arnandoBridge(dimension, solucao, arnandoSolucao, &arnando1, &arnando2);
-    //   printSolucao(solucao, dimension);
-
-    //   custoSolucao(&custo, solucao, solucao.size());
-    //   cout << "Custo: " << custoSoluca << " - Testado: " << custo << endl;
-
-    //   if(custoSoluca != custo) break;
-    // }
+      //if(custoSoluca != custo) break;
+    //}
 
     //Benchmark
     benchmark["tempo"] = cpuTime() - tempoInicial;
@@ -278,6 +276,7 @@ int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior){
   vector<int> vizinhanca = {1, 2, 3, 4, 5};
   vector<int> vizinhancaInicial = {1, 2, 3, 4, 5};
   vector<int> solucaoTeste;
+  vector< vector<int> > subsequenceMatrix;
 
   random_device rd;
   mt19937 mt(rd());
@@ -296,21 +295,23 @@ int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior){
     random = linear_i(mt);
     vizinhoRandom = vizinhanca[random];
 
+    updateSubsequenceMatrix(subsequenceMatrix, solucao);
+
     switch(vizinhoRandom){
       case 1:
-        novoCusto = reinsertion(solucaoTeste, 1, custoAnterior);
+        novoCusto = reinsertion(solucaoTeste, 1, custoAnterior, subsequenceMatrix);
         break;
       case 2:
-        novoCusto = reinsertion(solucaoTeste, 2, custoAnterior);
+        novoCusto = reinsertion(solucaoTeste, 2, custoAnterior, subsequenceMatrix);
         break;
       case 3:
-        novoCusto = reinsertion(solucaoTeste, 3, custoAnterior);
+        novoCusto = reinsertion(solucaoTeste, 3, custoAnterior, subsequenceMatrix);
         break;
       case 4:
-        novoCusto = swap(solucaoTeste, custoAnterior);
+        novoCusto = swap(solucaoTeste, custoAnterior, subsequenceMatrix);
         break;
       case 5:
-        novoCusto = twoOptN(solucaoTeste, custoAnterior);
+        novoCusto = twoOptN(solucaoTeste, custoAnterior, subsequenceMatrix);
         break;
       default:
         break;
@@ -858,6 +859,39 @@ void custoSolucao(int *custoTotal, vector<int> solucao, int tamanhoArray) {
     *custoTotal += matrizAdj[solucao[i]][solucao[i + 1]];
   }
 }
+
+void updateSubsequenceMatrix(vector< vector<int> > &subsequenceMatrix, vector<int> &solution){
+  int solutionSize = solution.size(), subsequenceCost = 0;
+  vector<int> row;
+  
+  if(subsequenceMatrix.size() > 0) subsequenceMatrix.clear();
+
+  for(int i = 0; i < solutionSize; i++){
+    for(int j = 0; j <= i; j++) row.push_back(0);
+    for(int j = i; j < solutionSize-1; j++){
+      subsequenceCost += matrizAdj[solution[j]][solution[j+1]];
+      row.push_back(subsequenceCost);
+    }
+    subsequenceCost = 0;
+    subsequenceMatrix.push_back(row);
+    row.clear();
+  }
+}
+
+void printSubsequenceMatrix(vector< vector<int> > &subsequenceMatrix){
+  for(int i = 0; i < subsequenceMatrix.size(); i++){
+    for(int j = 0; j < subsequenceMatrix.size(); j++){
+      if(subsequenceMatrix[i][j] > 1000) cout << " ";
+      else if(subsequenceMatrix[i][j] > 100 && subsequenceMatrix[i][j] < 1000) cout << "  ";
+      else if(subsequenceMatrix[i][j] < 100 && subsequenceMatrix[i][j] > 10) cout << "   ";
+      else cout << "    ";
+      cout << subsequenceMatrix[i][j];
+    }
+    cout << endl;
+  }
+  cout << endl;
+}
+
 
 bool compareByCost(const tInsercao &data1, const tInsercao &data2){
   return data1.custo < data2.custo;
