@@ -64,7 +64,7 @@ double tempoDoubleBridge = 0;
 void printData(); // Mostra matriz de adjacencia
 void printSolucao(vector<int> &solucao, int tamanhoArray); // Mostra a solução inicial gerada pel algorítimo escolhido
 void custoSolucao(int *custoTotal, vector<int> solucao, int tamanhoArray); // Mostra o custo da solução gerada
-void updateSubsequenceMatrix(vector< vector<int> > &subsequenceMatrix, vector<int> &solution);
+void updateSubsequenceMatrix(vector< vector<int> > &subsequenceMatrix, vector< vector<int> > &routeMatrix, vector<int> &solution);
 void printSubsequenceMatrix(vector< vector<int> > &subsequenceMatrix);
 bool compareByCost(const tInsercao &data1, const tInsercao &data2);
 
@@ -74,9 +74,9 @@ int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior);
 int gilsRvnd(vector<int> &solucao, int Imax, int Iils);
 
 // Vizinhanças
-int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix);
-int swap(vector<int> &solucao, int custoDaSolucaoAnteriorm, vector< vector<int> > &subsequenceMatrix);
-int twoOptN(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix);
+int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix);
+int swap(vector<int> &solucao, int custoDaSolucaoAnteriorm, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix);
+int twoOptN(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix);
 
 //Pertubações
 int doubleBridge(vector<int> &solucao, int custoDaSolucaoAnterior);
@@ -129,13 +129,14 @@ int main(int argc, char** argv){
 
     //Gera solução inicial
     //while(1){
-      vector< vector<int> > subsequenceMatrix; 
+      vector< vector<int> > subsequenceMatrix, routeMatrix; 
       alpha = linear_f1(mt);
       custoSoluca = construtivo(solucao, coleta, deposito, alpha);
       printSolucao(solucao, dimension);
 
-      updateSubsequenceMatrix(subsequenceMatrix, solucao);
+      updateSubsequenceMatrix(subsequenceMatrix, routeMatrix, solucao);
       printSubsequenceMatrix(subsequenceMatrix);
+      printSubsequenceMatrix(routeMatrix);
 
       custoSolucao(&custo, solucao, solucao.size());
       cout << "Custo: " << custoSoluca << " - Testado: " << custo << endl;
@@ -276,7 +277,7 @@ int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior){
   vector<int> vizinhanca = {1, 2, 3, 4, 5};
   vector<int> vizinhancaInicial = {1, 2, 3, 4, 5};
   vector<int> solucaoTeste;
-  vector< vector<int> > subsequenceMatrix;
+  vector< vector<int> > subsequenceMatrix, acumulateMatrix ;
 
   random_device rd;
   mt19937 mt(rd());
@@ -295,17 +296,17 @@ int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior){
     random = linear_i(mt);
     vizinhoRandom = vizinhanca[random];
 
-    updateSubsequenceMatrix(subsequenceMatrix, solucao);
+    updateSubsequenceMatrix(subsequenceMatrix, acumulateMatrix, solucao);
 
     switch(vizinhoRandom){
       case 1:
-        novoCusto = reinsertion(solucaoTeste, 1, custoAnterior, subsequenceMatrix);
+        novoCusto = reinsertion(solucaoTeste, 1, custoAnterior, subsequenceMatrix, acumulateMatrix);
         break;
       case 2:
-        novoCusto = reinsertion(solucaoTeste, 2, custoAnterior, subsequenceMatrix);
+        novoCusto = reinsertion(solucaoTeste, 2, custoAnterior, subsequenceMatrix, acumulateMatrix);
         break;
       case 3:
-        novoCusto = reinsertion(solucaoTeste, 3, custoAnterior, subsequenceMatrix);
+        novoCusto = reinsertion(solucaoTeste, 3, custoAnterior, subsequenceMatrix, acumulateMatrix);
         break;
       case 4:
         novoCusto = swap(solucaoTeste, custoAnterior, subsequenceMatrix);
@@ -454,7 +455,7 @@ int gilsRvnd(vector<int> &solucaoFinal, int Imax, int Iils){
 }
 
 // Vizinhanças
-int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior){
+int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix){
   // Inicia variáveis
   vector<int> aux;
 
@@ -464,16 +465,25 @@ int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior)
   bool flag = false;
   tReinsercao insercao;
 
+  //MLP
+  int finalAcumulateCost = 0;
+
   qtdReinsercoes++;
 
   //Procura local de melhor reinserção
   for(size_t i = 1; i < iterSize; i++){ 
-    custoRetirada = matrizAdj[solucao[i-1]][solucao[i+blocoSize]] - (matrizAdj[solucao[i-1]][solucao[i]] + matrizAdj[solucao[i+blocoSize-1]][solucao[i+blocoSize]]);
+    //custoRetirada = matrizAdj[solucao[i-1]][solucao[i+blocoSize]] - (matrizAdj[solucao[i-1]][solucao[i]] + matrizAdj[solucao[i+blocoSize-1]][solucao[i+blocoSize]]);
 
     for(size_t y = 0; y < solucaoSize - 1; y++){
       if(y >= (i-1) && y <= i + blocoSize) continue;
 
-      custoInsercao = (matrizAdj[solucao[y]][solucao[i]] + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) - matrizAdj[solucao[y]][solucao[y+1]];
+      if(i < y+1){
+
+      } else {
+        
+      }
+
+      //custoInsercao = (matrizAdj[solucao[y]][solucao[i]] + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) - matrizAdj[solucao[y]][solucao[y+1]];
 
       if((custoRetirada + custoInsercao) < deltaCusto){
         flag = true;
@@ -513,7 +523,7 @@ int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior)
   return custoDaSolucao;
 }
 
-int swap(vector<int> &solucao, int custoDaSolucaoAnterior){
+int swap(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix){
   //Inicia variáveis
   int deltaCusto = 0, custoRetirada = 0, custoInsercao = 0, custoDaSolucao = custoDaSolucaoAnterior;
   int solucaoSize = solucao.size();
@@ -566,7 +576,7 @@ int swap(vector<int> &solucao, int custoDaSolucaoAnterior){
   return custoDaSolucao;
 }
 
-int twoOptN(vector<int> &solucao, int custoDaSolucaoAnterior){
+int twoOptN(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix){
   //Inicia variáveis
   int deltaCusto = 0, custoRetirada = 0, custoInsercao = 0, custoDaSolucao = custoDaSolucaoAnterior;
   int aux = 0;
@@ -860,31 +870,39 @@ void custoSolucao(int *custoTotal, vector<int> solucao, int tamanhoArray) {
   }
 }
 
-void updateSubsequenceMatrix(vector< vector<int> > &subsequenceMatrix, vector<int> &solution){
+void updateSubsequenceMatrix(vector< vector<int> > &subsequenceMatrix, vector< vector<int> > &acumulateMatrix, vector<int> &solution){
   int solutionSize = solution.size(), subsequenceCost = 0;
-  vector<int> row;
+  vector<int> row, row2;
   
   if(subsequenceMatrix.size() > 0) subsequenceMatrix.clear();
+  if(acumulateMatrix.size() > 0) acumulateMatrix.clear();
 
   for(int i = 0; i < solutionSize; i++){
-    for(int j = 0; j <= i; j++) row.push_back(0);
+    for(int j = 0; j <= i; j++){
+      row.push_back(0);
+      row2.push_back(0);
+    } 
     for(int j = i; j < solutionSize-1; j++){
       subsequenceCost += matrizAdj[solution[j]][solution[j+1]];
       row.push_back(subsequenceCost);
+      row2.push_back(row2[j] + row[j+1]);
     }
     subsequenceCost = 0;
     subsequenceMatrix.push_back(row);
+    acumulateMatrix.push_back(row2);
     row.clear();
+    row2.clear();
   }
 }
 
 void printSubsequenceMatrix(vector< vector<int> > &subsequenceMatrix){
   for(int i = 0; i < subsequenceMatrix.size(); i++){
     for(int j = 0; j < subsequenceMatrix.size(); j++){
-      if(subsequenceMatrix[i][j] > 1000) cout << " ";
-      else if(subsequenceMatrix[i][j] > 100 && subsequenceMatrix[i][j] < 1000) cout << "  ";
-      else if(subsequenceMatrix[i][j] < 100 && subsequenceMatrix[i][j] > 10) cout << "   ";
-      else cout << "    ";
+      if(subsequenceMatrix[i][j] > 10000) cout << " ";
+      else if(subsequenceMatrix[i][j] > 1000 && subsequenceMatrix[i][j] < 10000) cout << "  ";
+      else if(subsequenceMatrix[i][j] > 100 && subsequenceMatrix[i][j] < 1000) cout << "   ";
+      else if(subsequenceMatrix[i][j] < 100 && subsequenceMatrix[i][j] > 10) cout << "    ";
+      else cout << "     ";
       cout << subsequenceMatrix[i][j];
     }
     cout << endl;
