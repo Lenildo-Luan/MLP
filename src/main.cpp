@@ -467,6 +467,7 @@ int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior,
 
   //MLP
   int finalAcumulateCost = 0;
+  int c1, c2, t1, t2;
 
   qtdReinsercoes++;
 
@@ -478,10 +479,22 @@ int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior,
       if(y >= (i-1) && y <= i + blocoSize) continue;
 
       if(i < y+1){
+        c1 = acumulateMatrix[0][i-1] + (y-i+blocoSize-1) * (subsequenceMatrix[0][i-1] + matrizAdj[i-1][i+blocoSize]) + acumulateMatrix[i+blocoSize][y];
+        t1 = subsequenceMatrix[0][i-1] + matrizAdj[i-1][i+blocoSize] + subsequenceMatrix[i+blocoSize][y];
 
+        c2 = c1 + blocoSize * (t1 + matrizAdj[y][i]) + acumulateMatrix[i][i+blocoSize-1];
+        t2 = t1 + matrizAdj[y][i] + subsequenceMatrix[i][i+blocoSize-1];
+
+        finalAcumulateCost = c2 + (dimension-2-y) * (t1+matrizAdj[i+blocoSize-1][y+1]) + acumulateMatrix[i+blocoSize][dimension-1];
       } else {
-        
+        c1 = acumulateMatrix[y+1][i-1] + (dimension-i+blocoSize-3) * (subsequenceMatrix[y+1][i-1] + matrizAdj[i-1][i+blocoSize]) + acumulateMatrix[i+blocoSize][dimension-1];
+        t1 = subsequenceMatrix[y+1][i-1] + matrizAdj[i-1][i+blocoSize] + subsequenceMatrix[i+blocoSize][dimension-1];
+
+        c2 = c1 + blocoSize * (t1 + matrizAdj[y][i]) + acumulateMatrix[i][i+blocoSize-1];
+        t2 = t1 + matrizAdj[y][i] + subsequenceMatrix[i][i+blocoSize-1];
       }
+
+      
 
       //custoInsercao = (matrizAdj[solucao[y]][solucao[i]] + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) - matrizAdj[solucao[y]][solucao[y+1]];
 
