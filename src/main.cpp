@@ -631,10 +631,10 @@ int twoOptN(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int
       // custoRetirada = matrizAdj[solucao[i]][solucao[i+1]] + matrizAdj[solucao[y-1]][solucao[y]];
       // custoInsercao = matrizAdj[solucao[i]][solucao[y-1]] + matrizAdj[solucao[i+1]][solucao[y]];
 
-      c1 = acumulateMatrix[0][i+1] + (y-1-i) * (subsequenceMatrix[i+1][y-1] + matrizAdj[solucao[i]][solucao[y-1]]) + acumulateMatrix[y][dimension-1];
-      t1 = subsequenceMatrix[i+1][y-1] +  matrizAdj[solucao[i]][solucao[y-1]] + subsequenceMatrix[y][dimension-1];
+      c1 = acumulateMatrix[0][i] + (y-1-i) * (subsequenceMatrix[i+1][y-1] + matrizAdj[solucao[i]][solucao[y-1]]) + acumulateMatrix[y][dimension];
+      t1 = subsequenceMatrix[i+1][y-1] +  matrizAdj[solucao[i]][solucao[y-1]] + subsequenceMatrix[y][dimension];
 
-      finalAcumulateCost = c1 + ((dimension-2)-y-1) * (t1+matrizAdj[solucao[i+1]][solucao[y]]) + acumulateMatrix[y][dimension-1];
+      finalAcumulateCost = c1 + ((dimension-1)-(y-1)) * (t1+matrizAdj[solucao[i+1]][solucao[y]]) + acumulateMatrix[y][dimension];
 
       if(finalAcumulateCost < bestAcumulateCost){
         flag = true;
