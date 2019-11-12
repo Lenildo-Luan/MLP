@@ -70,7 +70,7 @@ bool compareByCost(const tInsercao &data1, const tInsercao &data2);
 
 //GILS-RVND
 int construtivo(vector<int> &solucao, int coleta, int deposito, float alpha);
-int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior);
+int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix);
 int gilsRvnd(vector<int> &solucao, int Imax, int Iils);
 
 // Vizinhanças
@@ -273,11 +273,10 @@ int construtivo(vector<int> &solucao, int coleta, int deposito, float alpha){
 
 }
 
-int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior){
-  vector<int> vizinhanca = {1, 2, 3, 4, 5};
-  vector<int> vizinhancaInicial = {1, 2, 3, 4, 5};
+int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix){
+  vector<int> vizinhanca = {1, 2, 3};
+  vector<int> vizinhancaInicial = {1, 2, 3};
   vector<int> solucaoTeste;
-  vector< vector<int> > subsequenceMatrix, acumulateMatrix ;
 
   random_device rd;
   mt19937 mt(rd());
@@ -295,8 +294,6 @@ int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior){
     uniform_int_distribution<int> linear_i(0, vizinhanca.size() - 1);
     random = linear_i(mt);
     vizinhoRandom = vizinhanca[random];
-
-    updateSubsequenceMatrix(subsequenceMatrix, acumulateMatrix, solucao);
 
     switch(vizinhoRandom){
       case 1:
@@ -335,6 +332,8 @@ int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior){
     //cout << novoCusto << endl;
 
     if(vizinhanca.empty()) break;
+
+    updateSubsequenceMatrix(subsequenceMatrix, acumulateMatrix, solucao);
   }
 
   return custoAnterior;
@@ -349,7 +348,7 @@ int gilsRvnd(vector<int> &solucaoFinal, int Imax, int Iils){
   vector<int> solucaoParcial;
   vector<int> solucaoMelhor;
   vector<int> solucaoArnando;
-  vector< vector<int> > subsequenceMatrix, routeMatrix; 
+  vector< vector<int> > subsequenceMatrix, acumulateMatrix ;
 
   int custoFinal = INT32_MAX;
   int custoParcial = 0;
@@ -369,7 +368,9 @@ int gilsRvnd(vector<int> &solucaoFinal, int Imax, int Iils){
 
     //Calcula solução parcial com o método construtivo
     solucaoParcial.clear();
-    custoParcial = construtivo(solucaoParcial, coleta, deposito, alpha);
+    construtivo(solucaoParcial, coleta, deposito, alpha);
+    updateSubsequenceMatrix(subsequenceMatrix, acumulateMatrix, solucaoParcial);
+    custoParcial = acumulateMatrix[0][dimension];
     solucaoSize = solucaoParcial.size();
 
     //Registra a solução parcial como melhor solução
@@ -380,7 +381,7 @@ int gilsRvnd(vector<int> &solucaoFinal, int Imax, int Iils){
     //Busca o melhor ótimo local a partir da solução encontrada no construtivo
     while(interILS < Iils){
       //Busca melhor ótimo local da solução parcial
-      custoParcial = rvnd(solucaoParcial, custoParcial);
+      custoParcial = rvnd(solucaoParcial, custoParcial, subsequenceMatrix, acumulateMatrix);
 
       //Testa se houve melhora
       if(custoParcial < custoMelhor){
@@ -398,7 +399,7 @@ int gilsRvnd(vector<int> &solucaoFinal, int Imax, int Iils){
       //custoParcial = doubleBridge(solucaoParcial, custoParcial);
       solucaoParcial = solucaoMelhor;
       custoParcial = custoMelhor;
-      custoParcial = doubleBridge2(solucaoParcial, custoParcial);
+      doubleBridge2(solucaoParcial, custoParcial);
       // arnando1 = 0, arnando2 = 0;
       // solucaoArnando = solucaoParcial;
       // arnandoBridge(dimension, solucaoParcial, solucaoArnando, &arnando1, &arnando2);
@@ -406,6 +407,8 @@ int gilsRvnd(vector<int> &solucaoFinal, int Imax, int Iils){
      
       //Soma o interador
       interILS++;
+      updateSubsequenceMatrix(subsequenceMatrix, acumulateMatrix, solucaoParcial);
+      custoParcial = acumulateMatrix[0][dimension];
     }
 
     //Testa se houve melhora
@@ -452,11 +455,10 @@ int gilsRvnd(vector<int> &solucaoFinal, int Imax, int Iils){
 
   }
 
-  updateSubsequenceMatrix(subsequenceMatrix, routeMatrix, solucaoFinal);
-  cout << endl << "Latence: " << routeMatrix[0][dimension] << endl;
+  cout << endl << "Latence: " << acumulateMatrix[0][dimension] << endl;
 
-  // printSubsequenceMatrix(subsequenceMatrix);
-  // printSubsequenceMatrix(routeMatrix);
+  printSubsequenceMatrix(acumulateMatrix);
+  printSubsequenceMatrix(subsequenceMatrix);
 
   return custoFinal;
 }
@@ -488,26 +490,28 @@ int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior,
       //TODO: Passar contas que só dependem de I para o for acima
       //TODO: Passar parte da conta que calcula o bloco para fora dos fors
       if(i < y+1){
-        c1 = acumulateMatrix[0][i-1] + (y-i+blocoSize-1) * (subsequenceMatrix[0][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) + acumulateMatrix[i+blocoSize][y];
+        c1 = acumulateMatrix[0][i-1] + (y-(i+blocoSize-1)) * (subsequenceMatrix[0][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) + acumulateMatrix[i+blocoSize][y];
         t1 = subsequenceMatrix[0][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]] + subsequenceMatrix[i+blocoSize][y];
 
         c2 = c1 + blocoSize * (t1 + matrizAdj[solucao[y]][solucao[i]]) + acumulateMatrix[i][i+blocoSize-1];
         t2 = t1 + matrizAdj[solucao[y]][solucao[i]] + subsequenceMatrix[i][i+blocoSize-1];
 
-        finalAcumulateCost = c2 + (dimension-2-y) * (t1+matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) + acumulateMatrix[i+blocoSize][dimension-1];
+        finalAcumulateCost = c2 + (dimension-1-y) * (t1+matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) + acumulateMatrix[i+blocoSize][dimension];
+        cout << "finalAcumulateCost: " << finalAcumulateCost << endl;
       } else {
-        c1 = acumulateMatrix[y+1][i-1] + (dimension-2-i+blocoSize-1) * (subsequenceMatrix[y+1][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) + acumulateMatrix[i+blocoSize][dimension-1];
-        t1 = subsequenceMatrix[y+1][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]] + subsequenceMatrix[i+blocoSize][dimension-1];
+        c1 = acumulateMatrix[y+1][i-1] + ((dimension-1)-(i+blocoSize-1)) * (subsequenceMatrix[y+1][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) + acumulateMatrix[i+blocoSize][dimension];
+        t1 = subsequenceMatrix[y+1][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]] + subsequenceMatrix[i+blocoSize][dimension];
 
         c2 = c1 + blocoSize * (t1 + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) + acumulateMatrix[i][i+blocoSize-1];
         t2 = t1 + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]] + subsequenceMatrix[i][i+blocoSize-1];
 
         finalAcumulateCost = c2 + (y-1) * (t2+matrizAdj[solucao[y]][solucao[i]]) + acumulateMatrix[0][y];
+        //cout << "finalAcumulateCost: " << finalAcumulateCost << endl;
       }
 
       //custoInsercao = (matrizAdj[solucao[y]][solucao[i]] + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) - matrizAdj[solucao[y]][solucao[y+1]];
 
-      if(finalAcumulateCost < bestAcumulateCost){
+      if(finalAcumulateCost < custoDaSolucao){
         flag = true;
 
         bestAcumulateCost = finalAcumulateCost;
@@ -520,7 +524,7 @@ int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior,
 
   //Aplica reinserção
   if(flag){
-    //custoDaSolucao = custoDaSolucao + deltaCusto;
+    custoDaSolucao = acumulateMatrix[0][dimension];
 
     for(size_t i = 0; i < blocoSize; i++){
       aux.push_back(solucao[insercao.posVertice]);
@@ -554,7 +558,7 @@ int swap(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> >
   tSwap swap;
 
   //MLP
-  int finalAcumulateCost = 0, bestAcumulateCost = acumulateMatrix[0][dimension-1];;
+  int finalAcumulateCost = 0, bestAcumulateCost = acumulateMatrix[0][dimension-1];
   int c1, c2, c3, t1, t2, t3;
 
   //Aplica reinserção
@@ -572,12 +576,12 @@ int swap(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> >
       c2 = c1 + (y-1-i) * (t1 + matrizAdj[solucao[y]][solucao[i+1]]) +  acumulateMatrix[i+1][y-1];
       t2 = t2 + matrizAdj[solucao[y]][solucao[i+1]] + subsequenceMatrix[i+1][y-1];
 
-      c3 = c2 + (t2+matrizAdj[solucao[y]][solucao[i+1]]);
-      t3 = t2 + matrizAdj[solucao[y]][solucao[i+1]];
+      c3 = c2 + (t2+matrizAdj[solucao[y-1]][solucao[i]]);
+      t3 = t2 + matrizAdj[solucao[y-1]][solucao[i]];
 
-      finalAcumulateCost = c3 + (dimension-2-y) * (t3+matrizAdj[solucao[y]][solucao[y+1]]) + acumulateMatrix[y+1][dimension-1];
+      finalAcumulateCost = c3 + (dimension-1-y) * (t3+matrizAdj[solucao[i]][solucao[y+1]]) + acumulateMatrix[y+1][dimension-1];
 
-      if(finalAcumulateCost < bestAcumulateCost){
+      if(finalAcumulateCost < custoDaSolucao){
         flag = true;
 
         bestAcumulateCost = finalAcumulateCost;
@@ -590,7 +594,7 @@ int swap(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> >
   }
 
   if(flag){
-    //custoDaSolucao = custoDaSolucao + deltaCusto;
+    custoDaSolucao = acumulateMatrix[0][dimension];
 
     solucao.erase(solucao.begin() + swap.pos2);
     solucao.emplace(solucao.begin() + swap.pos2, swap.vertice1);
@@ -636,7 +640,7 @@ int twoOptN(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int
 
       finalAcumulateCost = c1 + ((dimension-1)-(y-1)) * (t1+matrizAdj[solucao[i+1]][solucao[y]]) + acumulateMatrix[y][dimension];
 
-      if(finalAcumulateCost < bestAcumulateCost){
+      if(finalAcumulateCost < custoDaSolucao){
         flag = true;
 
         bestAcumulateCost = finalAcumulateCost;
@@ -649,7 +653,7 @@ int twoOptN(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int
   }
 
   if(flag){
-    custoDaSolucao = custoDaSolucao + deltaCusto;
+    custoDaSolucao = acumulateMatrix[0][dimension];
     sizeSwap = swap.pos2 - swap.pos1;
 
     for(size_t i = 0; i < sizeSwap; i++){
