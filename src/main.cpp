@@ -274,9 +274,11 @@ int construtivo(vector<int> &solucao, int coleta, int deposito, float alpha){
 }
 
 int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix){
-  vector<int> vizinhanca = {1, 2, 3};
-  vector<int> vizinhancaInicial = {1, 2, 3};
+  vector<int> vizinhanca = {1, 1};
+  vector<int> vizinhancaInicial;
   vector<int> solucaoTeste;
+
+  vizinhancaInicial = vizinhanca;
 
   random_device rd;
   mt19937 mt(rd());
@@ -494,7 +496,8 @@ int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior,
 
       //TODO: Passar contas que só dependem de I para o for acima
       //TODO: Passar parte da conta que calcula o bloco para fora dos fors
-      if(i < y+1){
+      if(i < y) continue;
+      if(i < y){
         c1 = acumulateMatrix[0][i-1] + (y-(i+blocoSize-1)) * (subsequenceMatrix[0][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) + acumulateMatrix[i+blocoSize][y];
         t1 = subsequenceMatrix[0][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]] + subsequenceMatrix[i+blocoSize][y];
 
@@ -510,7 +513,7 @@ int reinsertion(vector<int> &solucao, int blocoSize, int custoDaSolucaoAnterior,
         c2 = c1 + (i-1-y) * (t1 + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) + acumulateMatrix[y+1][i-1];
         t2 = t1 + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]] + subsequenceMatrix[y+1][i-1];
 
-        finalAcumulateCost = c2 + (dimension-(i+blocoSize-1)) * (t2+matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) + acumulateMatrix[i+blocoSize][dimension];
+        finalAcumulateCost = c2 + ((dimension-1)-(i+blocoSize-1)) * (t2+matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) + acumulateMatrix[i+blocoSize][dimension];
         //cout << "finalAcumulateCost: " << finalAcumulateCost << endl;
       }
 
