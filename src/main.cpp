@@ -86,104 +86,22 @@
 
   //MAIN
   int main(int argc, char** argv){
+    //Get instance
     readData(argc, argv, &dimension, &matrizAdj);
-    printData();
+    //printData();
 
+    //Initi variables
     vector<int> solucao;
-    vector<int> arnandoSolucao;
-    int arnando1 = 0, arnando2 = 0;
+    int custoSoluca, custo, maxIls = (dimension > 150) ? dimension/2 : dimension;
 
-    int custoSoluca, custo;
-    int flag = 0;
-    int maxIls = (dimension > 150) ? dimension/2 : dimension;
-    double tempoInicial;
+    //Run algoritm
+    custoSoluca = gilsRvnd(solucao, 50, maxIls);
 
-    // for(size_t i = 0; i < 10; i++){
-      tempoInicial = cpuTime();
+    //Show results
+    printSolucao(solucao, dimension);
+    cout << "Custo: " << custoSoluca << endl;
 
-      custoSoluca = gilsRvnd(solucao, 50, maxIls);
-
-      //printSolucao(solucao, dimension);
-      cout << "Custo: " << custoSoluca << endl;
-      // custoSolucao(&custo, solucao, solucao.size());
-      // cout << "Custo rota: " << custo << endl;
-      // cout << "Custo teste: " << custoAcumulate(solucao) << endl;
-      cout << "Tempo total: " << cpuTime() - tempoInicial << endl;
-      cout << "Tempo das reinsercoes: " << tempoTotalReinsercao << endl;
-      cout << "Tempo dos swaps: " << tempoTotalSwap << endl;
-      cout << "Tempo dos two opt n: " << tempoTotalTwoOpt<< endl;
-      cout << "Tempo dos double bridges: " << tempoTotalDoubleBridge << endl;
-
-      tempoTotalReinsercao = 0;
-      tempoTotalDoubleBridge = 0;
-      tempoTotalSwap = 0;
-      tempoTotalTwoOpt = 0;
-
-      tempoInicial = 0;
-
-      cout << endl;
-    // }
-
-      //Declara variáveis do método construtivo
-      // random_device rd;
-      // mt19937 mt(rd());
-      // uniform_real_distribution<float> linear_f1(0.0, 0.5);
-      // int coleta = 1;
-      // int deposito = 1;
-      // float alpha = 0.0;
-
-      //Gera solução inicial
-      //while(1){
-        // vector< vector<int> > subsequenceMatrix, acumulateMatrix;
-        // alpha = linear_f1(mt);
-        // custoSoluca = construtivo(solucao, coleta, deposito, alpha);
-        // printSolucao(solucao, dimension);
-        // cout << endl;
-        //
-        // updateSubsequenceMatrix(subsequenceMatrix, acumulateMatrix, solucao);
-        // printSubsequenceMatrix(subsequenceMatrix);
-        // printSubsequenceMatrix(acumulateMatrix);
-        // custoSoluca = twoOptN(solucao, acumulateMatrix[0][dimension], subsequenceMatrix, acumulateMatrix);
-        // updateSubsequenceMatrix(subsequenceMatrix, acumulateMatrix, solucao);
-        //
-        // custoSolucao(&custo, solucao, solucao.size());
-        // cout << "Result: " << custoSoluca << endl;
-        // cout << "Custo: " << custo << endl;
-
-        //if(custoSoluca != custo) break;
-      //}
-
-      //Benchmark
-      benchmark["tempo"] = cpuTime() - tempoInicial;
-
-      //Benchmark
-      string arquivo = argv[1];
-      string instancia;
-      string barra ("/");
-      string ponto (".");
-
-      //Benchmark
-      for(size_t i = 0; i < arquivo.size(); i++){
-        if(flag == 2 && arquivo[i] == ponto[0]) break;
-        else if(flag == 2) instancia.push_back(arquivo[i]);
-        else if(arquivo[i] == barra[0]) flag++;
-      }
-
-      //Benchmark
-      ofstream benchmarkArchiveReinsercao("archive/" + instancia + "_reinsercao_benchmark" + ".json");
-      ofstream benchmarkArchiveSwap("archive/" + instancia + "_swap_benchmark" + ".json");
-      ofstream benchmarkArchiveTwoOpt("archive/" + instancia + "_twoOpt_benchmark" + ".json");
-      ofstream benchmarkArchiveDoubleBridge("../archive/" + instancia + "_doubleBridge_benchmark" + ".json");
-      ofstream benchmarkArchive("archive/" + instancia + "_time" + ".json");
-
-      //Benchmark
-      benchmarkArchiveReinsercao << setw(4) << benchmarkReinsercao << endl;
-      benchmarkArchiveSwap << setw(4) << benchmarkSwap << endl;
-      benchmarkArchiveTwoOpt << setw(4) << benchmarkTwoOpt << endl;
-      benchmarkArchiveDoubleBridge << setw(4) << benchmarkDoubleBridge << endl;
-      benchmarkArchive << setw(4) << benchmark << endl;
-
-      return 0;
+    return 0;
   }
 
   //GILS-RVND
@@ -194,6 +112,7 @@
 
     random_device rd;
     mt19937 mt(rd()); // Gerador de números aleatórios
+    tInsercao insercao;
 
     int rBest;
     int randomVertice1, randomVertice2, randomVertice3;
@@ -201,7 +120,6 @@
     int verticesRestantes;
     int distanciaVertice;
     int custoSolucao = 0;
-    tInsercao insercao;
 
     //Adiciona coleta ao vector
     solucao.clear();
@@ -273,21 +191,12 @@
     }
 
     return custoSolucao;
-
-    // // Mostra solução
-    // for (size_t i = 0; i < solucao.size(); i++){
-    //   cout << solucao[i] << " ";
-    //   //cout << solucaoInicial[i] << " ";
-    // }
-
   }
 
   int rvnd(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix){
     vector<int> vizinhanca = {1, 2, 3, 4, 5};
-    vector<int> vizinhancaInicial;
+    vector<int> vizinhancaInicial = vizinhanca;
     vector<int> solucaoTeste;
-
-    vizinhancaInicial = vizinhanca;
 
     random_device rd;
     mt19937 mt(rd());
@@ -327,7 +236,6 @@
       }
 
       if(novoCusto < custoAnterior){
-        //cout << "MELHORA RVND: " << novoCusto << endl;
         custoAnterior = novoCusto;
 
         solucao.clear();
@@ -339,9 +247,6 @@
       } else {
         vizinhanca.erase(vizinhanca.begin() + random);
       }
-
-      //printSolucao(solucao, solucao.size());
-      //cout << novoCusto << endl;
 
       if(vizinhanca.empty()) break;
 
@@ -359,7 +264,6 @@
 
     vector<int> solucaoParcial;
     vector<int> solucaoMelhor;
-    vector<int> solucaoArnando;
     vector< vector<int> > subsequenceMatrix, acumulateMatrix;
 
     int custoFinal = INT32_MAX;
@@ -369,7 +273,6 @@
     int deposito = 1;
     int interILS;
     int solucaoSize;
-    int arnando1 = 0, arnando2 = 0;
     float alpha = 0.0;
 
     //Busca Melhor Solução
@@ -383,13 +286,11 @@
       construtivo(solucaoParcial, coleta, deposito, alpha);
       updateSubsequenceMatrix(subsequenceMatrix, acumulateMatrix, solucaoParcial);
       custoParcial = acumulateMatrix[0][dimension];
-      //cout << "CUSTO INICIAL: " << custoParcial << endl;
       solucaoSize = solucaoParcial.size();
 
       //Registra a solução parcial como melhor solução
       custoMelhor = custoParcial;
       solucaoMelhor = solucaoParcial;
-      solucaoArnando = solucaoParcial;
 
       //Busca o melhor ótimo local a partir da solução encontrada no construtivo
       while(interILS < Iils){
@@ -401,7 +302,6 @@
           //Registra a solução parcial como melhor solução
           custoMelhor = custoParcial;
           solucaoMelhor = solucaoParcial;
-          //cout << "MELHORA ILS: " << custoMelhor << endl;
           qtdMelhorasDoubleBridge++;
 
           //Zera o iterador
@@ -409,14 +309,9 @@
         }
 
         //Pertuba a solução
-        //custoParcial = doubleBridge(solucaoParcial, custoParcial);
         solucaoParcial = solucaoMelhor;
         custoParcial = custoMelhor;
         doubleBridge2(solucaoParcial, custoParcial);
-        // arnando1 = 0, arnando2 = 0;
-        // solucaoArnando = solucaoParcial;
-        // arnandoBridge(dimension, solucaoParcial, solucaoArnando, &arnando1, &arnando2);
-        //custoSolucao(&custoParcial,  solucaoParcial,  solucaoParcial.size());
 
         //Soma o interador
         interILS++;
@@ -432,50 +327,10 @@
         cout << "MELHORA GRASP: " << custoFinal << endl;
       }
 
-      //Benchmark
-      benchmarkReinsercao[i]["Iteração"] = to_string(i);
-      benchmarkReinsercao[i]["qtdMelhoras"] = qtdMelhorasReinsercao;
-      benchmarkReinsercao[i]["tempo"] = tempoReinsercao;
-
       tempoTotalReinsercao += tempoReinsercao;
-      qtdMelhorasReinsercao = 0;
-      tempoReinsercao = 0;
-
-      //Benchmark
-      benchmarkSwap[i]["Iteração"] = to_string(i);
-      benchmarkSwap[i]["qtdMelhoras"] = qtdMelhorasSwap;
-      benchmarkSwap[i]["tempo"] = tempoSwap;
-
-      tempoTotalSwap += tempoSwap;
-      qtdMelhorasSwap = 0;
-      tempoSwap = 0;
-
-      //Benchmark
-      benchmarkTwoOpt[i]["Iteração"] = to_string(i);
-      benchmarkTwoOpt[i]["qtdMelhoras"] = qtdMelhorasTwoOpt;
-      benchmarkTwoOpt[i]["tempo"] = tempoTwoOpt;
-
-      tempoTotalTwoOpt += tempoTwoOpt;
-      qtdMelhorasTwoOpt = 0;
-      tempoTwoOpt = 0;
-
-      //Benchmark
-      benchmarkDoubleBridge[i]["Iteração"] = to_string(i);
-      benchmarkDoubleBridge[i]["qtdMelhoras"] = qtdMelhorasDoubleBridge;
-      benchmarkDoubleBridge[i]["tempo"] = tempoDoubleBridge;
-
-      tempoTotalDoubleBridge += tempoDoubleBridge;
-      qtdMelhorasDoubleBridge = 0;
-      tempoDoubleBridge = 0;
-
     }
 
     updateSubsequenceMatrix(subsequenceMatrix, acumulateMatrix, solucaoFinal);
-
-    cout << endl << "Latence: " << acumulateMatrix[0][dimension] << endl;
-
-    //printSubsequenceMatrix(acumulateMatrix);
-    //printSubsequenceMatrix(subsequenceMatrix);
 
     return custoFinal;
   }
@@ -485,9 +340,8 @@
     // Inicia variáveis
     vector<int> aux;
 
-    int deltaCusto = 0, custoRetirada = 0, custoInsercao = 0, custoDaSolucao = custoDaSolucaoAnterior, solucaoSize = solucao.size();
+    int solucaoSize = solucao.size();
     int iterSize = solucaoSize - blocoSize;
-    double tempoInicial = cpuTime();
     bool flag = false;
     tReinsercao insercao;
 
@@ -495,45 +349,55 @@
     int finalAcumulateCost = custoDaSolucaoAnterior, bestAcumulateCost = custoDaSolucaoAnterior;
     int finalSubsequenceCost = 0, bestSubsequence = 0;
     int c1, c2, t1, t2;
-
-    qtdReinsercoes++;
+    int ac0_1, ac1_2, sc1_2, ac1_1, tpv, blocoSizepi;
 
     //Procura local de melhor reinserção
     for(int  i = 1; i < iterSize; i++){
-      //custoRetirada = matrizAdj[solucao[i-1]][solucao[i+blocoSize]] - (matrizAdj[solucao[i-1]][solucao[i]] + matrizAdj[solucao[i+blocoSize-1]][solucao[i+blocoSize]]);
+      blocoSizepi = i+blocoSize;
+      ac0_1 = acumulateMatrix[0][i-1], ac1_2 = acumulateMatrix[i][blocoSizepi-1];
+      ac1_1 = acumulateMatrix[i][i+blocoSize-1];
+      tpv = subsequenceMatrix[0][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]];
+      sc1_2 = subsequenceMatrix[i][i+blocoSize-1];
 
-      for(int y = 0; y < solucaoSize - 1; y++){
-        if(y >= (i-1) && y <= i + blocoSize) continue;
+      for(int y = 0; y < i - 1; y++){
+        c1 = acumulateMatrix[0][y] + (blocoSize) * (subsequenceMatrix[0][y] + matrizAdj[solucao[y]][solucao[i]]) + ac1_1;
+        t1 = subsequenceMatrix[0][y] + matrizAdj[solucao[y]][solucao[i]] + subsequenceMatrix[i][i+blocoSize-1];
 
-        //TODO: Passar contas que só dependem de I para o for acima
-        //TODO: Passar parte da conta que calcula o bloco para fora dos fors
-        //if(i < y) continue;
-        if(i < y){
-          c1 = acumulateMatrix[0][i-1] + ((y)-(i+blocoSize-1)) * (subsequenceMatrix[0][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) + acumulateMatrix[i+blocoSize][y];
-          t1 = subsequenceMatrix[0][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]] + subsequenceMatrix[i+blocoSize][y];
-          //cout << "C1: " << acumulateMatrix[0][i-1] << " + " << ((y-1)-(i+blocoSize-1)) << " * " << (subsequenceMatrix[0][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) << " + " << acumulateMatrix[i+blocoSize][y-1] << endl;
+        c2 = c1 + (i-1-(y)) * (t1 + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) + acumulateMatrix[y+1][i-1];
+        t2 = t1 + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]] + subsequenceMatrix[y+1][i-1];
 
-          c2 = c1 + blocoSize * (t1 + matrizAdj[solucao[y]][solucao[i]]) + acumulateMatrix[i][i+blocoSize-1];
-          t2 = t1 + matrizAdj[solucao[y]][solucao[i]] + subsequenceMatrix[i][i+blocoSize-1];
-          //cout << "C2: " << c1 << " + " << blocoSize << " * " << (t1 + matrizAdj[solucao[y-1]][solucao[i]]) << " + " << acumulateMatrix[i][i+blocoSize-1] << endl;
+        finalAcumulateCost = c2 + ((dimension)-(i+blocoSize-1)) * (t2+matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) + acumulateMatrix[i+blocoSize][dimension];
+        finalSubsequenceCost = t2 + matrizAdj[solucao[i-1]][solucao[i+blocoSize]] + subsequenceMatrix[i+blocoSize][dimension];
+        //cout << "finalAcumulateCost: " << finalAcumulateCost << endl;
+      
+        //custoInsercao = (matrizAdj[solucao[y]][solucao[i]] + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) - matrizAdj[solucao[y]][solucao[y+1]];
 
-          finalAcumulateCost = c2 + (dimension-(y)) * (t2+matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) + acumulateMatrix[y+1][dimension];
-          finalSubsequenceCost = t2 + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]] + subsequenceMatrix[y+1][dimension];
-          //cout << "FinalAcumulateCost: " << finalAcumulateCost << " = " << c2 << " + " << (dimension-1-(y-1)) << " * " << t2+matrizAdj[solucao[i+blocoSize-1]][solucao[y]] << " + " << acumulateMatrix[y][dimension] << endl;
-          //cout << "Remove: " << i << endl;
-          //cout << "Insert: " << y << endl;
-          //cout << "finalAcumulateCost: " << finalAcumulateCost << endl;
-        } else {
-          c1 = acumulateMatrix[0][y] + (blocoSize) * (subsequenceMatrix[0][y] + matrizAdj[solucao[y]][solucao[i]]) + acumulateMatrix[i][i+blocoSize-1];
-          t1 = subsequenceMatrix[0][y] + matrizAdj[solucao[y]][solucao[i]] + subsequenceMatrix[i][i+blocoSize-1];
-
-          c2 = c1 + (i-1-(y)) * (t1 + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) + acumulateMatrix[y+1][i-1];
-          t2 = t1 + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]] + subsequenceMatrix[y+1][i-1];
-
-          finalAcumulateCost = c2 + ((dimension)-(i+blocoSize-1)) * (t2+matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) + acumulateMatrix[i+blocoSize][dimension];
-          finalSubsequenceCost = t2 + matrizAdj[solucao[i-1]][solucao[i+blocoSize]] + subsequenceMatrix[i+blocoSize][dimension];
-          //cout << "finalAcumulateCost: " << finalAcumulateCost << endl;
+        if(finalAcumulateCost < bestAcumulateCost){
+          flag = true;
+          //cout << "HOUVE MELHORA! " << finalAcumulateCost << endl;
+          bestAcumulateCost = finalAcumulateCost;
+          bestSubsequence = finalSubsequenceCost;
+          insercao.posVertice = i;
+          insercao.posInsercao = y+1;
+          insercao.vertice = solucao[i];
         }
+      }
+
+      for(int y = i + blocoSize + 1; y < solucaoSize - 1; y++){
+        c1 = ac0_1 + ((y)-(blocoSizepi-1)) * (tpv) + acumulateMatrix[blocoSizepi][y];
+        t1 = tpv + subsequenceMatrix[blocoSizepi][y];
+        //cout << "C1: " << acumulateMatrix[0][i-1] << " + " << ((y-1)-(i+blocoSize-1)) << " * " << (subsequenceMatrix[0][i-1] + matrizAdj[solucao[i-1]][solucao[i+blocoSize]]) << " + " << acumulateMatrix[i+blocoSize][y-1] << endl;
+
+        c2 = c1 + blocoSize * (t1 + matrizAdj[solucao[y]][solucao[i]]) + ac1_2;
+        t2 = t1 + matrizAdj[solucao[y]][solucao[i]] + sc1_2;
+        //cout << "C2: " << c1 << " + " << blocoSize << " * " << (t1 + matrizAdj[solucao[y-1]][solucao[i]]) << " + " << acumulateMatrix[i][i+blocoSize-1] << endl;
+
+        finalAcumulateCost = c2 + (dimension-(y)) * (t2+matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) + acumulateMatrix[y+1][dimension];
+        finalSubsequenceCost = t2 + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]] + subsequenceMatrix[y+1][dimension];
+        //cout << "FinalAcumulateCost: " << finalAcumulateCost << " = " << c2 << " + " << (dimension-1-(y-1)) << " * " << t2+matrizAdj[solucao[i+blocoSize-1]][solucao[y]] << " + " << acumulateMatrix[y][dimension] << endl;
+        //cout << "Remove: " << i << endl;
+        //cout << "Insert: " << y << endl;
+        //cout << "finalAcumulateCost: " << finalAcumulateCost << endl;
 
         //custoInsercao = (matrizAdj[solucao[y]][solucao[i]] + matrizAdj[solucao[i+blocoSize-1]][solucao[y+1]]) - matrizAdj[solucao[y]][solucao[y+1]];
 
@@ -555,7 +419,6 @@
       // cout << "Remove: " << insercao.posVertice << " - " << solucao[insercao.posVertice] << endl;
       // cout << "Insert: " << insercao.posInsercao << " - " << solucao[insercao.posInsercao] << endl;
 
-      custoDaSolucao = bestAcumulateCost;
       //cout << "bestAcumulateCost: " << bestAcumulateCost << endl;
       for(size_t i = 0; i < blocoSize; i++){
         aux.push_back(solucao[insercao.posVertice]);
@@ -570,26 +433,15 @@
       // cout << "Acumulate: " << acumulateMatrix[0][dimension] << " - " << bestAcumulateCost << endl;
       // cout << "Subsequence: " << subsequenceMatrix[0][dimension] << " - " << bestSubsequence << endl;
 
-
-      deltaCusto = 0;
       flag = true;
     }
-
-    //Benchmark
-    if(flag){
-      qtdMelhorasReinsercao++;
-    }
-
-    tempoReinsercao += cpuTime() - tempoInicial;
 
     return bestAcumulateCost;
   }
 
   int swap(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix){
     //Inicia variáveis
-    int deltaCusto = 0, custoRetirada = 0, custoInsercao = 0, custoDaSolucao = custoDaSolucaoAnterior;
     int solucaoSize = solucao.size();
-    double tempoInicial = cpuTime();
     bool flag = false;
     tSwap swap;
 
@@ -637,8 +489,6 @@
     }
 
     if(flag){
-      custoDaSolucao = bestAcumulateCost;
-
       solucao.erase(solucao.begin() + swap.pos2);
       solucao.emplace(solucao.begin() + swap.pos2, swap.vertice1);
 
@@ -653,22 +503,13 @@
       //cout << "pos2: " << swap.pos2 << endl;
 
       flag = false;
-      deltaCusto = 0;
     }
-
-    //Benchmark
-    if(true){
-      qtdMelhorasSwap++;
-    }
-
-    tempoSwap += cpuTime() - tempoInicial;
 
     return bestAcumulateCost;
   }
 
   int twoOptN(vector<int> &solucao, int custoDaSolucaoAnterior, vector< vector<int> > &subsequenceMatrix, vector< vector<int> > acumulateMatrix){
     //Inicia variáveis
-    int deltaCusto = 0, custoRetirada = 0, custoInsercao = 0, custoDaSolucao = custoDaSolucaoAnterior;
     int aux = 0;
     int solucaoSize = solucao.size();
     int sizeSwap;
@@ -683,9 +524,6 @@
 
     for(size_t i = 0; i < solucaoSize; i++){
       for(size_t y = i + 2; y < solucaoSize; y++){
-        // custoRetirada = matrizAdj[solucao[i]][solucao[i+1]] + matrizAdj[solucao[y-1]][solucao[y]];
-        // custoInsercao = matrizAdj[solucao[i]][solucao[y-1]] + matrizAdj[solucao[i+1]][solucao[y]];
-
         c1 = acumulateMatrix[0][i] + (y-1-i) * (subsequenceMatrix[0][i] + matrizAdj[solucao[i]][solucao[y-1]]) + acumulateMatrix[y-1][i+1];
         t1 = subsequenceMatrix[0][i] + matrizAdj[solucao[i]][solucao[y-1]] + subsequenceMatrix[y-1][i+1];
 
@@ -706,7 +544,6 @@
     }
 
     if(flag){
-      custoDaSolucao = acumulateMatrix[0][dimension];
       sizeSwap = swap.pos2 - swap.pos1;
 
       for(size_t i = 0; i < sizeSwap; i++){
@@ -720,16 +557,7 @@
       // cout << "Subsequence: " << subsequenceMatrix[0][dimension] << " - " << bestSubsequence << endl;
 
       flag = true;
-      deltaCusto = 0;
-
     }
-
-    //Benchmark
-    if(true){
-      qtdMelhorasTwoOpt++;
-    }
-
-    tempoTwoOpt+= cpuTime() - tempoInicial;
 
     return bestAcumulateCost;
   }
@@ -777,100 +605,86 @@
     return custoDaSolucaoAnterior + deltaCusto;
   }
 
-  int doubleBridge2(vector<int> &solucao, int custoDaSolucaoAnterior){
+  int doubleBridge2(vector<int> &sol, int cost){
     random_device rd;
     mt19937_64 mt(rd());
     uniform_int_distribution<int> linear_bme20(2, dimension / 3);
     uniform_int_distribution<int> linear_bma20(2, dimension / 10);
 
-    vector<int> aux1, aux2;
+    vector<int> subSeq1, subSeq2;
 
-    int bloco1, bloco2;
-    int pos1, pos2;
-    int custoInicial, custoFinal, deltaCusto = 0;
-    double tempoInicial = cpuTime();
+    int sizeSubSeq1, sizeSubSeq2;
+    int initSubSeq1, initSubSeq2;
+    int initialCost, finalCost, deltaCost = 0;
 
-    // if(dimension < 20){
-      bloco1 = linear_bme20(mt);
-      bloco2 = linear_bme20(mt);
-    // } else {
-    //   bloco1 = linear_bma20(mt);
-    //   bloco2 = linear_bma20(mt);
-    // }
-
-    uniform_int_distribution<int> linear_p1(1, solucao.size() - bloco1 - 1);
-    uniform_int_distribution<int> linear_p2(1, solucao.size() - bloco2 - 1);
+    sizeSubSeq1 = linear_bme20(mt);
+    sizeSubSeq2 = linear_bme20(mt);
+    
+    uniform_int_distribution<int> linear_p1(1, sol.size() - sizeSubSeq1 - 1);
+    uniform_int_distribution<int> linear_p2(1, sol.size() - sizeSubSeq2 - 1);
 
     while(1){
-      pos1 = linear_p1(mt);
-      pos2 = linear_p2(mt);
+      initSubSeq1 = linear_p1(mt);
+      initSubSeq2 = linear_p2(mt);
 
-      if((pos2 <= (pos1 - bloco2) && pos1 > bloco2) || (pos2 >= (pos1 + bloco1) && ((solucao.size() - 1) - pos1 - (bloco1 - 1)) > bloco2)) break;
+      if((initSubSeq2 <= (initSubSeq1 - sizeSubSeq2) && initSubSeq1 > sizeSubSeq2) || (initSubSeq2 >= (initSubSeq1 + sizeSubSeq1) && ((sol.size() - 1) - initSubSeq1 - (sizeSubSeq1 - 1)) > sizeSubSeq2)) break;
     }
 
-    for(size_t i = 0; i < bloco1; i++){
-      aux1.push_back(solucao[pos1 + i]);
+    for(size_t i = 0; i < sizeSubSeq1; i++){
+      subSeq1.push_back(sol[initSubSeq1 + i]);
     }
 
-    for(size_t i = 0; i < bloco2; i++){
-      aux2.push_back(solucao[pos2 + i]);
+    for(size_t i = 0; i < sizeSubSeq2; i++){
+      subSeq2.push_back(sol[initSubSeq2 + i]);
     }
 
-    // cout << endl;
-    // cout << pos1 << " " << bloco1 << " " << solucao[pos1] << endl << pos2 << " " << bloco2 << " " << solucao[pos2];
-    // cout << endl;
-
-    if(pos1 > pos2){
-      if((pos1 - bloco2) == pos2){
-        deltaCusto = (matrizAdj[solucao[pos2 - 1]][solucao[pos1]] + matrizAdj[solucao[pos1 + bloco1 - 1]][solucao[pos2]] + matrizAdj[solucao[pos2 + bloco2 - 1]][solucao[pos1 + bloco1]]) -
-                    (matrizAdj[solucao[pos2 - 1]][solucao[pos2]] + matrizAdj[solucao[pos2 + bloco2 - 1]][solucao[pos1]] + matrizAdj[solucao[pos1 + bloco1 - 1]][solucao[pos1 + bloco1]]);
+    if(initSubSeq1 > initSubSeq2){
+      if((initSubSeq1 - sizeSubSeq2) == initSubSeq2){
+        deltaCost = (matrizAdj[sol[initSubSeq2 - 1]][sol[initSubSeq1]] + matrizAdj[sol[initSubSeq1 + sizeSubSeq1 - 1]][sol[initSubSeq2]] + matrizAdj[sol[initSubSeq2 + sizeSubSeq2 - 1]][sol[initSubSeq1 + sizeSubSeq1]]) -
+                    (matrizAdj[sol[initSubSeq2 - 1]][sol[initSubSeq2]] + matrizAdj[sol[initSubSeq2 + sizeSubSeq2 - 1]][sol[initSubSeq1]] + matrizAdj[sol[initSubSeq1 + sizeSubSeq1 - 1]][sol[initSubSeq1 + sizeSubSeq1]]);
       } else {
-        custoInicial = (matrizAdj[solucao[pos1 - 1]][solucao[pos1 + bloco1]] + matrizAdj[solucao[pos2 - 1]][solucao[pos2 + bloco2]]) -
-                      (matrizAdj[solucao[pos1 - 1]][solucao[pos1]] + matrizAdj[solucao[pos1 + bloco1 - 1]][solucao[pos1 + bloco1]] +
-                        matrizAdj[solucao[pos2 - 1]][solucao[pos2]] + matrizAdj[solucao[pos2 + bloco2 - 1]][solucao[pos2 + bloco2]]);
+        initialCost = (matrizAdj[sol[initSubSeq1 - 1]][sol[initSubSeq1 + sizeSubSeq1]] + matrizAdj[sol[initSubSeq2 - 1]][sol[initSubSeq2 + sizeSubSeq2]]) - 
+                      (matrizAdj[sol[initSubSeq1 - 1]][sol[initSubSeq1]] + matrizAdj[sol[initSubSeq1 + sizeSubSeq1 - 1]][sol[initSubSeq1 + sizeSubSeq1]] + 
+                        matrizAdj[sol[initSubSeq2 - 1]][sol[initSubSeq2]] + matrizAdj[sol[initSubSeq2 + sizeSubSeq2 - 1]][sol[initSubSeq2 + sizeSubSeq2]]);
 
-        custoFinal =(matrizAdj[solucao[pos1 - 1]][solucao[pos2]] + matrizAdj[solucao[pos2 + bloco2 - 1]][solucao[pos1 + bloco1]] +
-                    matrizAdj[solucao[pos2 - 1]][solucao[pos1]] + matrizAdj[solucao[pos1 + bloco1 - 1]][solucao[pos2 + bloco2]]) -
-                    (matrizAdj[solucao[pos1 - 1]][solucao[pos1 + bloco1]] + matrizAdj[solucao[pos2 - 1]][solucao[pos2 + bloco2]]);
+        finalCost =(matrizAdj[sol[initSubSeq1 - 1]][sol[initSubSeq2]] + matrizAdj[sol[initSubSeq2 + sizeSubSeq2 - 1]][sol[initSubSeq1 + sizeSubSeq1]] + 
+                    matrizAdj[sol[initSubSeq2 - 1]][sol[initSubSeq1]] + matrizAdj[sol[initSubSeq1 + sizeSubSeq1 - 1]][sol[initSubSeq2 + sizeSubSeq2]]) - 
+                    (matrizAdj[sol[initSubSeq1 - 1]][sol[initSubSeq1 + sizeSubSeq1]] + matrizAdj[sol[initSubSeq2 - 1]][sol[initSubSeq2 + sizeSubSeq2]]);
 
-        deltaCusto = custoFinal + custoInicial;
+        deltaCost = finalCost + initialCost;
       }
 
-      solucao.erase(solucao.begin() + pos2, solucao.begin() + pos2 + (bloco2));
-      solucao.insert(solucao.begin() + pos2, aux1.begin(), aux1.begin() + aux1.size());
+      sol.erase(sol.begin() + initSubSeq2, sol.begin() + initSubSeq2 + (sizeSubSeq2));
+      sol.insert(sol.begin() + initSubSeq2, subSeq1.begin(), subSeq1.begin() + subSeq1.size());
 
-      solucao.erase(solucao.begin() + pos1 + (bloco1 - bloco2), solucao.begin() + pos1 + (bloco1 - bloco2) + (bloco1));
-      solucao.insert(solucao.begin() + pos1 + (bloco1 - bloco2), aux2.begin(), aux2.begin() + aux2.size());
+      sol.erase(sol.begin() + initSubSeq1 + (sizeSubSeq1 - sizeSubSeq2), sol.begin() + initSubSeq1 + (sizeSubSeq1 - sizeSubSeq2) + (sizeSubSeq1));
+      sol.insert(sol.begin() + initSubSeq1 + (sizeSubSeq1 - sizeSubSeq2), subSeq2.begin(), subSeq2.begin() + subSeq2.size());
 
     } else {
-      if(pos1 + bloco1 == pos2){
-        deltaCusto = (matrizAdj[solucao[pos1 - 1]][solucao[pos2]] + matrizAdj[solucao[pos2 + bloco2 - 1]][solucao[pos1]] + matrizAdj[solucao[pos1 + bloco1 - 1]][solucao[pos2 + bloco2]]) -
-                    (matrizAdj[solucao[pos1 - 1]][solucao[pos1]] + matrizAdj[solucao[pos1 + bloco1 - 1]][solucao[pos2]] + matrizAdj[solucao[pos2 + bloco2 - 1]][solucao[pos2 + bloco2]]);
-
+      if(initSubSeq1 + sizeSubSeq1 == initSubSeq2){
+        deltaCost = (matrizAdj[sol[initSubSeq1 - 1]][sol[initSubSeq2]] + matrizAdj[sol[initSubSeq2 + sizeSubSeq2 - 1]][sol[initSubSeq1]] + matrizAdj[sol[initSubSeq1 + sizeSubSeq1 - 1]][sol[initSubSeq2 + sizeSubSeq2]]) -
+                    (matrizAdj[sol[initSubSeq1 - 1]][sol[initSubSeq1]] + matrizAdj[sol[initSubSeq1 + sizeSubSeq1 - 1]][sol[initSubSeq2]] + matrizAdj[sol[initSubSeq2 + sizeSubSeq2 - 1]][sol[initSubSeq2 + sizeSubSeq2]]);
+      
       } else {
-        custoInicial = (matrizAdj[solucao[pos1 - 1]][solucao[pos1 + bloco1]] + matrizAdj[solucao[pos2 - 1]][solucao[pos2 + bloco2]]) -
-                      (matrizAdj[solucao[pos1 - 1]][solucao[pos1]] + matrizAdj[solucao[pos1 + bloco1 - 1]][solucao[pos1 + bloco1]] +
-                        matrizAdj[solucao[pos2 - 1]][solucao[pos2]] + matrizAdj[solucao[pos2 + bloco2 - 1]][solucao[pos2 + bloco2]]);
+        initialCost = (matrizAdj[sol[initSubSeq1 - 1]][sol[initSubSeq1 + sizeSubSeq1]] + matrizAdj[sol[initSubSeq2 - 1]][sol[initSubSeq2 + sizeSubSeq2]]) - 
+                      (matrizAdj[sol[initSubSeq1 - 1]][sol[initSubSeq1]] + matrizAdj[sol[initSubSeq1 + sizeSubSeq1 - 1]][sol[initSubSeq1 + sizeSubSeq1]] + 
+                        matrizAdj[sol[initSubSeq2 - 1]][sol[initSubSeq2]] + matrizAdj[sol[initSubSeq2 + sizeSubSeq2 - 1]][sol[initSubSeq2 + sizeSubSeq2]]);
 
-        custoFinal =(matrizAdj[solucao[pos1 - 1]][solucao[pos2]] + matrizAdj[solucao[pos2 + bloco2 - 1]][solucao[pos1 + bloco1]] +
-                    matrizAdj[solucao[pos2 - 1]][solucao[pos1]] + matrizAdj[solucao[pos1 + bloco1 - 1]][solucao[pos2 + bloco2]]) -
-                    (matrizAdj[solucao[pos1 - 1]][solucao[pos1 + bloco1]] + matrizAdj[solucao[pos2 - 1]][solucao[pos2 + bloco2]]);
+        finalCost =(matrizAdj[sol[initSubSeq1 - 1]][sol[initSubSeq2]] + matrizAdj[sol[initSubSeq2 + sizeSubSeq2 - 1]][sol[initSubSeq1 + sizeSubSeq1]] + 
+                    matrizAdj[sol[initSubSeq2 - 1]][sol[initSubSeq1]] + matrizAdj[sol[initSubSeq1 + sizeSubSeq1 - 1]][sol[initSubSeq2 + sizeSubSeq2]]) - 
+                    (matrizAdj[sol[initSubSeq1 - 1]][sol[initSubSeq1 + sizeSubSeq1]] + matrizAdj[sol[initSubSeq2 - 1]][sol[initSubSeq2 + sizeSubSeq2]]);
 
-        deltaCusto = custoFinal + custoInicial;
+        deltaCost = finalCost + initialCost;
       }
 
-      solucao.erase(solucao.begin() + pos1, solucao.begin() + pos1 + (bloco1));
-      solucao.insert(solucao.begin() + pos1, aux2.begin(), aux2.begin() + aux2.size());
+      sol.erase(sol.begin() + initSubSeq1, sol.begin() + initSubSeq1 + (sizeSubSeq1));
+      sol.insert(sol.begin() + initSubSeq1, subSeq2.begin(), subSeq2.begin() + subSeq2.size());
 
-      solucao.erase(solucao.begin() + pos2 + (bloco2 - bloco1), solucao.begin() + pos2 + (bloco2 - bloco1) + (bloco2));
-      solucao.insert(solucao.begin() + pos2 + (bloco2 - bloco1), aux1.begin(), aux1.begin() + aux1.size());
+      sol.erase(sol.begin() + initSubSeq2 + (sizeSubSeq2 - sizeSubSeq1), sol.begin() + initSubSeq2 + (sizeSubSeq2 - sizeSubSeq1) + (sizeSubSeq2));
+      sol.insert(sol.begin() + initSubSeq2 + (sizeSubSeq2 - sizeSubSeq1), subSeq1.begin(), subSeq1.begin() + subSeq1.size());
     }
 
-    //deltaCusto = custoFinal + custoInicial;
-
-    tempoDoubleBridge += cpuTime() - tempoInicial;
-
-    return custoDaSolucaoAnterior + deltaCusto;
+    return cost + deltaCost;
   }
 
   int arnandoBridge(int N, vector<int> &solucaoTop, vector<int> &solucaoILS, int *indexFirstTimeInicio, int *indexFirstTimeFinal){
@@ -1040,7 +854,6 @@
     }
     cout << endl;
   }
-
 
   bool compareByCost(const tInsercao &data1, const tInsercao &data2){
     return data1.custo < data2.custo;
